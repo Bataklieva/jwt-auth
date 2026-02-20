@@ -1,16 +1,24 @@
-package com.service;
+package com.auth.service;
 
-import com.model.User;
-import com.model.enums.Role;
-import com.repository.UserRepository;
+import com.auth.dto.AuthRequest;
+import com.auth.dto.AuthResponse;
+import com.auth.model.User;
+import com.auth.model.enums.Role;
+import com.auth.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class AuthService {
 
     private final AuthenticationManager authManager;

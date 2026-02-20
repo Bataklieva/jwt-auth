@@ -1,15 +1,16 @@
-package com.model;
+package com.auth.model;
 
-import com.model.enums.Role;
+import com.auth.model.enums.Role;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 @Entity
 @Table(name = "users")
-@EqualsAndHashCode
-@Getter
-@Setter
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class User {
 

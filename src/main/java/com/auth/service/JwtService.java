@@ -1,4 +1,4 @@
-package com.service;
+package com.auth.service;
 
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
