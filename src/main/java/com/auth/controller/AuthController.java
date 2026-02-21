@@ -46,7 +46,7 @@ public class AuthController {
 
         String accessToken = authHeader.substring(7);
         long remainingTime = jwtService.getRemainingValidity(accessToken);
-        blacklistService.blacklistToken(accessToken, remainingTime);
+        blacklistService.blacklist(accessToken, remainingTime);
         refreshTokenService.revokeToken(request.getRefreshToken());
         return ResponseEntity.ok("Logged out successfully");
     }

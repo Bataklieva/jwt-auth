@@ -1,50 +1,58 @@
 package com.auth.service;
 
+import com.auth.configuration.RsaKeyConfig;
+import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
-import io.jsonwebtoken.security.Keys;
-import org.springframework.beans.factory.annotation.Value;
+import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
-import java.security.Key;
 import java.util.Date;
+import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class JwtService {
 
-    @Value("${jwt.secret}")
-    private String secret;
-
-    private Key getKey() {
-        return Keys.hmacShaKeyFor(secret.getBytes());
-    }
+    private final RsaKeyConfig rsaKeys;
 
     public String generateAccessToken(UserDetails user) {
+
+        List<String> roles = user.getAuthorities()
+                .stream()
+                .map(auth -> auth.getAuthority())
+                .toList();
+
         return Jwts.builder()
                 .setSubject(user.getUsername())
-                .claim("role", user.getAuthorities())
+                .claim("roles", roles)
+                .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 15))
-                .signWith(getKey(), SignatureAlgorithm.HS256)
+                .signWith(rsaKeys.getPrivateKey(), SignatureAlgorithm.RS256)
                 .compact();
     }
+
 
     public String generateRefreshToken(UserDetails user) {
         return Jwts.builder()
                 .setSubject(user.getUsername())
+                .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + 1000L * 60 * 60 * 24 * 7))
-                .signWith(getKey(), SignatureAlgorithm.HS256)
+                .signWith(rsaKeys.getPrivateKey(), SignatureAlgorithm.RS256)
                 .compact();
     }
 
-    public long getRemainingValidity(String token) {
-        Date expiration = Jwts.parserBuilder()
-                .setSigningKey(getKey())
+    public Claims extractClaims(String token) {
+        return Jwts.parserBuilder()
+                .setSigningKey(rsaKeys.getPublicKey())
                 .build()
                 .parseClaimsJws(token)
-                .getBody()
-                .getExpiration();
-        return expiration.getTime() - System.currentTimeMillis();
+                .getBody();
     }
 
+    public long getRemainingValidity(String token) {
+        Date expiration = extractClaims(token).getExpiration();
+        return expiration.getTime() - System.currentTimeMillis();
+    }
 }

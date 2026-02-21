@@ -33,7 +33,7 @@ public class AuthService {
         User user = User.builder()
                 .username(request.getUsername())
                 .password(encoder.encode(request.getPassword()))
-                .role(Role.USER).build();
+                .role(Role.ROLE_USER).build();
         repo.save(user);
 
         return generateTokens(user);
