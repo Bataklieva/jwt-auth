@@ -37,4 +37,14 @@ public class JwtService {
                 .compact();
     }
 
+    public long getRemainingValidity(String token) {
+        Date expiration = Jwts.parserBuilder()
+                .setSigningKey(getKey())
+                .build()
+                .parseClaimsJws(token)
+                .getBody()
+                .getExpiration();
+        return expiration.getTime() - System.currentTimeMillis();
+    }
+
 }

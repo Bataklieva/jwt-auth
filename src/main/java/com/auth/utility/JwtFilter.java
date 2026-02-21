@@ -1,9 +1,11 @@
 package com.auth.utility;
 
+import com.auth.service.TokenBlacklistService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.*;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
@@ -15,6 +17,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class JwtFilter extends OncePerRequestFilter {
 
+    private final TokenBlacklistService blacklistService;
     private final JwtUtil jwtUtil = new JwtUtil();
 
     @Override
@@ -27,6 +30,11 @@ public class JwtFilter extends OncePerRequestFilter {
 
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
             String token = authHeader.substring(7);
+
+            if (blacklistService.isBlacklisted(token)) {
+                response.setStatus(HttpStatus.UNAUTHORIZED.value());
+                return;
+            }
 
             if (jwtUtil.validateToken(token)) {
                 String username = jwtUtil.extractUsername(token);
