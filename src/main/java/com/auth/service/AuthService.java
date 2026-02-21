@@ -2,8 +2,10 @@ package com.auth.service;
 
 import com.auth.dto.AuthRequest;
 import com.auth.dto.AuthResponse;
-import com.auth.model.User;
-import com.auth.model.enums.Role;
+import com.auth.dto.RefreshTokenRequest;
+import com.auth.entity.RefreshToken;
+import com.auth.entity.User;
+import com.auth.entity.enums.Role;
 import com.auth.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -25,12 +27,13 @@ public class AuthService {
     private final JwtService jwtService;
     private final UserRepository repo;
     private final PasswordEncoder encoder;
+    private final RefreshTokenService refreshTokenService;
 
     public AuthResponse register(AuthRequest request) {
-        User user = new User();
-        user.setUsername(request.getUsername());
-        user.setPassword(encoder.encode(request.getPassword()));
-        user.setRole(Role.USER);
+        User user = User.builder()
+                .username(request.getUsername())
+                .password(encoder.encode(request.getPassword()))
+                .role(Role.USER).build();
         repo.save(user);
 
         return generateTokens(user);
@@ -49,16 +52,29 @@ public class AuthService {
     }
 
     private AuthResponse generateTokens(User user) {
-        UserDetails userDetails =
-                new org.springframework.security.core.userdetails.User(
+        UserDetails userDetails = buildUserDetails(user);
+        String access = jwtService.generateAccessToken(userDetails);
+        String refresh = jwtService.generateRefreshToken(userDetails);
+        refreshTokenService.createRefreshToken(user, refresh);
+        return AuthResponse.builder()
+                .accessToken(access)
+                .refreshToken(refresh)
+                .build();
+    }
+
+    private UserDetails buildUserDetails (User user) {
+        return new org.springframework.security.core.userdetails.User(
                         user.getUsername(),
                         user.getPassword(),
                         List.of(new SimpleGrantedAuthority("ROLE_" + user.getRole()))
                 );
-
-        String access = jwtService.generateAccessToken(userDetails);
-        String refresh = jwtService.generateRefreshToken(userDetails);
-
-        return new AuthResponse(access, refresh);
     }
+
+    public AuthResponse refresh(RefreshTokenRequest request) {
+        RefreshToken storedToken =
+                refreshTokenService.validateRefreshToken(request.getRefreshToken());
+        User user = storedToken.getUser();
+        return generateTokens(user);
+    }
+
 }

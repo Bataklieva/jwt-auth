@@ -2,7 +2,6 @@ package com.auth.configuration;
 
 import com.auth.dto.ApiError;
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.validation.ConstraintViolationException;
 import org.springframework.http.*;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -20,7 +19,7 @@ public class GlobalExceptionHandler {
 
         String message = ex.getBindingResult()
                 .getFieldErrors()
-                .get(0)
+                .getFirst()
                 .getDefaultMessage();
 
         return buildError(HttpStatus.BAD_REQUEST, message, request);

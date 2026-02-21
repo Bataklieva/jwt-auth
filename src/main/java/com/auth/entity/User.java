@@ -1,13 +1,16 @@
-package com.auth.model;
+package com.auth.entity;
 
-import com.auth.model.enums.Role;
+import com.auth.entity.enums.Role;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
+import java.util.List;
+
 @Entity
 @Table(name = "users")
-@Data
+@Getter
+@Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
@@ -24,8 +27,11 @@ public class User {
     String password;
 
     @Enumerated(EnumType.STRING)
-    private Role role;
+    Role role;
 
-    private boolean enabled;
+    boolean enabled;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    List<RefreshToken> refreshTokens;
 
 }

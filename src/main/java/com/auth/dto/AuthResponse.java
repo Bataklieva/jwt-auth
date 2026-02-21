@@ -4,8 +4,8 @@ import lombok.*;
 
 @Data
 @Builder
-@NoArgsConstructor
 @AllArgsConstructor
+@NoArgsConstructor
 public class AuthResponse {
 
     private String accessToken;
@@ -18,4 +18,5 @@ public class AuthResponse {
         this.accessToken=access;
         this.refreshToken=refresh;
     }
+
 }

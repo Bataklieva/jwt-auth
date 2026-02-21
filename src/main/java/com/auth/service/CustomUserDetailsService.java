@@ -1,6 +1,6 @@
 package com.auth.service;
 
-import com.auth.model.User;
+import com.auth.entity.User;
 import com.auth.repository.UserRepository;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
